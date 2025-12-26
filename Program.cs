@@ -1,8 +1,9 @@
-﻿using System;
+using System;
+
 
 namespace AlgorithmsProject
 {
-    // استخدام enum للتقديرات
+       //  (Enum) تعريف التقديرات المتاحة حسب طلب المسألة
     enum GradeStatus { Fail, Good, VeryGood, Excellent }
 
     class Student
@@ -15,7 +16,7 @@ namespace AlgorithmsProject
         public double FinalResult;
         public GradeStatus StudentGrade;
 
-        // مؤشرات اللائحة الخطية المزدوجة
+                //  مؤشرات اللائحة الخطية المزدوجة للربط الأمامي والخلفي
         public Student Next;
         public Student Prev;
 
@@ -26,13 +27,14 @@ namespace AlgorithmsProject
             CityName = city;
             FirstExam = e1;
             SecondExam = e2;
-            // حسبة المحصلة بجمع علامتي الاختبار وقسمتها على 2
+
+                  //  حساب المحصلة: (الاختبار 1 + الاختبار 2) / 2
             FinalResult = (e1 + e2) / 2;
-            
-            // توزيع التقدير حسب المحصلة
+
+                //  تحديد التقدير الأكاديمي بناءً على المحصلة المحسوبة
             if (FinalResult >= 90) StudentGrade = GradeStatus.Excellent;
             else if (FinalResult >= 80) StudentGrade = GradeStatus.VeryGood;
-            else if (FinalResult >= 50) StudentGrade = GradeStatus.Good;
+            else if (FinalResult >= 60) StudentGrade = GradeStatus.Good;
             else StudentGrade = GradeStatus.Fail;
         }
     }
@@ -44,22 +46,37 @@ namespace AlgorithmsProject
 
         static void Main(string[] args)
         {
-            // رسائل ترحيبية للمستخدم العادي
-            Console.WriteLine("=== نظام إدارة سجلات الطلاب ===");
+            Console.WriteLine("========================================");
+            Console.WriteLine("   STUDENT MANAGEMENT SYSTEM (ALGORITHMS)   ");
+            Console.WriteLine("========================================");
 
-            // إدخال بيانات 5 طلاب كبداية
+                 //  إدخال بيانات 5 طلاب بشكل إجباري عند بدء التشغيل كما هو مطلوب
             int count = 1;
             while (count <= 5)
             {
-                Console.WriteLine($"\n--- تسجيل الطالب {count} من 5 ---");
-                if (InputStudentData(false)) count++;
+                Console.WriteLine($"\n>>> Enter data for Student ({count}/5):");
+                Student s = CreateStudent();
+                if (s != null)
+                {
+                    InsertAtEnd(s);
+                    Console.WriteLine($"[System]: {s.StudentName} added. Avg: {s.FinalResult}, Grade: {s.StudentGrade}");
+                    count++;
+                }
             }
-
+            
             bool exit = false;
             while (!exit)
             {
-                Console.WriteLine("\n1. عرض الكل | 2. فرز | 3. بحث (عودي) | 4. إضافة | 5. حذف | 6. متفوقين | 0. خروج");
-                Console.Write("اختر: ");
+             //  القائمة الرئيسية الموجهة للمستخدم العادي باللغة الإنكليزية
+                Console.WriteLine("\n----------------------------------------");
+                Console.WriteLine("MAIN MENU:");
+                Console.WriteLine("1. Display Registered Students");
+                Console.WriteLine("2. Sort Students (Name/Grade)");
+                Console.WriteLine("3. Recursive Search for a Score");
+                Console.WriteLine("4. Add a New Student");
+                Console.WriteLine("0. Exit Program");
+                Console.Write("Select an option: ");
+
                 string choice = Console.ReadLine();
                 switch (choice)
                 {
@@ -67,139 +84,148 @@ namespace AlgorithmsProject
                     case "2": SortMenu(); break;
                     case "3": SearchMenu(); break;
                     case "4": AddByChoice(); break;
-                    case "5": DeleteByID(); break; // حذف طالب برقم محدد
-                    case "6": ShowHighAchievers(); break; // أعلى من 85
-                    case "0": exit = true; break;
+                    case "0": exit = true; Console.WriteLine("Closing System..."); break;
+                    default: Console.WriteLine("Invalid option, try again."); break;
                 }
             }
         }
 
-        static bool InputStudentData(bool isManualAdd)
+                   //  دالة لقراءة بيانات الطالب من الكونسول مع معالجة الأخطاء
+        static Student CreateStudent()
         {
             try
             {
-                Console.Write("الرقم: "); int id = int.Parse(Console.ReadLine());
-                Console.Write("الاسم: "); string name = Console.ReadLine();
-                Console.Write("المحافظة: "); string city = Console.ReadLine();
-                Console.Write("الاختبار 1: "); double e1 = double.Parse(Console.ReadLine());
-                Console.Write("الاختبار 2: "); double e2 = double.Parse(Console.ReadLine());
+                Console.Write("ID: "); int id = int.Parse(Console.ReadLine());
+                Console.Write("Full Name: "); string name = Console.ReadLine();
+                Console.Write("Province: "); string city = Console.ReadLine();
+                Console.Write("Exam 1: "); double e1 = double.Parse(Console.ReadLine());
+                Console.Write("Exam 2: "); double e2 = double.Parse(Console.ReadLine());
 
-                Student s = new Student(id, name, city, e1, e2);
-                if (!isManualAdd) InsertAtEnd(s);
-                return true;
+                return new Student(id, name, city, e1, e2);
             }
-            catch { Console.WriteLine("خطأ في البيانات!"); return false; }
+            catch
+            {
+                Console.WriteLine("(!) Input error: Please enter valid numbers.");
+                return null;
+            }
         }
 
-        // إضافة في النهاية
+        // إضافة عقدة جديدة في نهاية اللائحة المزدوجة
         static void InsertAtEnd(Student s)
         {
-            if (head == null) head = tail = s;
+            if (head == null) { head = tail = s; s.Next = s.Prev = null; }
             else { tail.Next = s; s.Prev = tail; tail = s; s.Next = null; }
         }
 
-        // إضافة في البداية
+              //  إضافة عقدة جديدة في بداية اللائحة المزدوجة
         static void InsertAtStart(Student s)
         {
-            if (head == null) head = tail = s;
+            if (head == null) { head = tail = s; s.Next = s.Prev = null; }
             else { s.Next = head; head.Prev = s; head = s; s.Prev = null; }
         }
 
+        // عرض كافة البيانات المخزنة في اللائحة حالياً
         static void DisplayAll()
         {
             Student temp = head;
+            if (temp == null) { Console.WriteLine("List is empty."); return; }
+            Console.WriteLine("\n--- Student Records ---");
             while (temp != null)
             {
-                Console.WriteLine($"{temp.StudentID} | {temp.StudentName} | {temp.FinalResult} | {temp.StudentGrade}");
+                Console.WriteLine($"ID: {temp.StudentID} | Name: {temp.StudentName} | City: {temp.CityName} | Avg: {temp.FinalResult} | Grade: {temp.StudentGrade}");
                 temp = temp.Next;
             }
         }
 
-        // قائمة الفرز
+                 //  قائمة اختيار نوع الفرز (حسب الاسم أو المحصلة)
         static void SortMenu()
         {
-            Console.WriteLine("1. بالاسم (A-Z) | 2. بالمحصلة (أدنى للأعلى)");
+            Console.WriteLine("\nSort by:");
+            Console.WriteLine("1. Name (A to Z)");
+            Console.WriteLine("2. Score (Low to High)");
+            Console.Write("Choice: ");
             string c = Console.ReadLine();
-            BubbleSort(c == "1");
+            if (c == "1") BubbleSort(true);
+            else if (c == "2") BubbleSort(false);
         }
 
+        // تنفيذ خوارزمية الفقاعة لترتيب اللائحة المزدوجة
         static void BubbleSort(bool byName)
         {
             if (head == null) return;
             bool swapped;
-            do {
+            do
+            {
                 swapped = false;
                 Student curr = head;
-                while (curr.Next != null) {
-                    // شروط الفرز المطلوبة
-                    bool condition = byName ? 
-                        string.Compare(curr.StudentName, curr.Next.StudentName) > 0 : 
+                while (curr.Next != null)
+                {
+                    bool condition = byName ?
+                        string.Compare(curr.StudentName, curr.Next.StudentName) > 0 :
                         curr.FinalResult > curr.Next.FinalResult;
 
                     if (condition) { SwapData(curr, curr.Next); swapped = true; }
                     curr = curr.Next;
                 }
             } while (swapped);
+            Console.WriteLine("Sorting completed.");
         }
 
+        // تبديل قيم الحقول بين العقد 
         static void SwapData(Student a, Student b)
         {
-            // تبديل كل الحقول لضمان عدم ضياع البيانات
             int tId = a.StudentID; a.StudentID = b.StudentID; b.StudentID = tId;
             string tN = a.StudentName; a.StudentName = b.StudentName; b.StudentName = tN;
+            string tC = a.CityName; a.CityName = b.CityName; b.CityName = tC;
+            double te1 = a.FirstExam; a.FirstExam = b.FirstExam; b.FirstExam = te1;
+            double te2 = a.SecondExam; a.SecondExam = b.SecondExam; b.SecondExam = te2;
             double tR = a.FinalResult; a.FinalResult = b.FinalResult; b.FinalResult = tR;
             GradeStatus tG = a.StudentGrade; a.StudentGrade = b.StudentGrade; b.StudentGrade = tG;
         }
 
-        // البحث العودي (Recursive)
+        // قائمة البحث عن علامة معينة
         static void SearchMenu()
         {
-            Console.Write("أدخل العلامة للبحث: ");
-            double v = double.Parse(Console.ReadLine());
-            RecursiveSearch(head, v);
-        }
-
-        static void RecursiveSearch(Student node, double target)
-        {
-            if (node == null) return;
-            if (node.FirstExam == target || node.SecondExam == target)
-                Console.WriteLine($"تم العثور: {node.StudentName}");
-            RecursiveSearch(node.Next, target);
-        }
-
-        // حذف طالب
-        static void DeleteByID()
-        {
-            Console.Write("ID للحذف: ");
-            int id = int.Parse(Console.ReadLine());
-            Student curr = head;
-            while (curr != null) {
-                if (curr.StudentID == id) {
-                    if (curr.Prev != null) curr.Prev.Next = curr.Next; else head = curr.Next;
-                    if (curr.Next != null) curr.Next.Prev = curr.Prev; else tail = curr.Prev;
-                    return;
-                }
-                curr = curr.Next;
+            Console.Write("Enter the score to search for: ");
+            if (double.TryParse(Console.ReadLine(), out double val))
+            {
+                Console.WriteLine($"Searching for score {val}...");
+                //  استدعاء دالة البحث العودي بدءاً من أول اللائحة
+                bool found = RecursiveSearch(head, val);
+                if (!found) Console.WriteLine("No matches found.");
             }
         }
 
-        static void ShowHighAchievers()
+              //  داله البحث العودي
+        static bool RecursiveSearch(Student node, double target)
         {
-            Student t = head;
-            while (t != null) {
-                if (t.FinalResult > 85) Console.WriteLine(t.StudentName);
-                t = t.Next;
+            if (node == null) return false;
+
+            bool match = false;
+            // معالجة دقة الأرقام العشرية عند المقارنة
+            if (Math.Abs(node.FinalResult - target) < 0.01)
+            {
+                Console.WriteLine($">> Match Found: {node.StudentName} (ID: {node.StudentID})");
+                match = true;
             }
+
+            return RecursiveSearch(node.Next, target) || match;
         }
 
+        //  خيار إضافة طالب جديد في موقع محدد
         static void AddByChoice()
         {
-            Console.WriteLine("1. في البداية | 2. في النهاية");
+            Console.WriteLine("\nWhere to add?");
+            Console.WriteLine("1. At Beginning");
+            Console.WriteLine("2. At End");
+            Console.Write("Selection: ");
             string c = Console.ReadLine();
-            // استدعاء دالة الإدخال ثم التوجيه
-            if (InputStudentData(true)) {
-                Student s = tail; // آخر مضاف
-                if (c == "1") InsertAtStart(s); 
+            Student s = CreateStudent();
+            if (s != null)
+            {
+                if (c == "1") InsertAtStart(s);
+                else InsertAtEnd(s);
+                Console.WriteLine("Student added successfully.");
             }
         }
     }
